@@ -16,14 +16,19 @@ def create_dirs():
     path12 = os.path.join(path1, 'masks')
     path21 = os.path.join(path2, 'images')
     path22 = os.path.join(path2, 'masks')
+
+    pred = 'predimages'
+    
     try:
         os.makedirs(path11)
         os.makedirs(path12)
         os.makedirs(path21)
         os.makedirs(path22)
+        os.makedirs(pred)
     except Exception as e:
         print("Directories already created.")
-    return path11, path12, path21, path22
+    
+    return path11, path12, path21, path22, pred
 
 
 
@@ -40,14 +45,23 @@ def random_transforms(img, msk):
         new_img = new_img.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
         new_msk = new_msk.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     return new_img, new_msk
-        
+
+
+
 #------------------------------------------------------
-pathTI, pathTM, pathVI, pathVM = create_dirs()
+pathTI, pathTM, pathVI, pathVM, preddir = create_dirs()
+
+all_files = []
+for child in Path('../images/').iterdir():
+    all_files.append(child.name)
 
 filenames = []
 for child in Path('../labels/').iterdir():
     filenames.append(child.name)
 #print(filenames)
+
+predfiles = [f for f in all_files if f not in filenames] 
+#print(predfiles)
 
 fraction = 0.3
 ntest = int(len(filenames) * fraction) 
@@ -59,6 +73,12 @@ trainl = [i for i in filenames if i not in testl]
 n_transforms = 5
 source_path1 = '../images/'
 source_path2 = '../labels/'
+
+for filename in predfiles:
+    img = Image.open(source_path1+filename)
+    img.save(preddir+"/"+filename)
+    img.close()
+
 
 for filename in trainl:
     img = Image.open(source_path1+filename)
